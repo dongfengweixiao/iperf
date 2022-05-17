@@ -791,6 +791,12 @@ iperf_set_on_test_finish_callback(struct iperf_test* ipt, void (*callback)())
         ipt->on_test_finish = callback;
 }
 
+void
+iperf_set_on_new_output_callback(struct iperf_test* ipt, void (*callback)())
+{
+    ipt->on_new_output = callback;
+}
+
 /********************** Get/set test protocol structure ***********************/
 
 struct protocol *
@@ -945,6 +951,10 @@ iperf_on_test_finish(struct iperf_test *test)
 {
 }
 
+void
+iperf_on_new_output(const char* format, ...)
+{
+}
 
 /******************************************************************************/
 
@@ -2843,6 +2853,7 @@ iperf_defaults(struct iperf_test *testp)
     testp->on_test_start = iperf_on_test_start;
     testp->on_connect = iperf_on_connect;
     testp->on_test_finish = iperf_on_test_finish;
+    testp->on_new_output = iperf_on_new_output;
 
     TAILQ_INIT(&testp->server_output_list);
 
@@ -4779,6 +4790,8 @@ iperf_printf(struct iperf_test *test, const char* format, ...)
                 return r0;
             r += r0;
         }
+    if (test->on_new_output)
+        test->on_new_output("%s", linebuffer);
 	fprintf(test->outfile, "%s", linebuffer);
 
 	if (test->role == 's' && iperf_get_test_get_server_output(test)) {
